@@ -20,7 +20,7 @@ Our reverse engineering revealed that the Venty's internal auto-shutoff watchdog
 
 While temperature changes are ignored by the watchdog, heater state shifts reset the timer back to 120s immediately.
 
-Simply toggling Boost mode causes the device to lock into the higher target temperature (+15 °C or 210 °C) without automatically returning. This daemon solves the problem by executing a millisecond-precision state bounce whenever the timer drops to or below 100 seconds:
+Simply toggling Boost mode causes the device to lock into the higher target temperature (+15 °C or 210 °C) without automatically returning. This daemon solves the problem by executing a millisecond-precision state bounce whenever the timer drops to or below 30 seconds:
 
 - **Normal Mode (Mode 1):** The ESP32 triggers Boost (Mode 2) -> immediately interrupts with Heater OFF (Mode 0) for 150 ms -> switches right back to Normal (Mode 1). The timer resets to 120s instantly while preserving the user's base temperature setting (e.g. 180.0 °C).
 - **Boost Mode (Mode 2):** When the user actively vapes in Boost, dropping the heater into Mode 0 would cancel it. Instead, the daemon performs an unlatch sequence: Mode 0 (150ms) -> Mode 1 (200ms) -> Mode 2. This guarantees the timer resets while locking the device safely back into Boost (195.0 °C).
@@ -33,6 +33,21 @@ Because these transitions execute in under 600 ms, the heating chamber experienc
 Special credit goes to the [reactive-volcano-app](https://github.com/firsttris/reactive-volcano-app) project.
 
 Their reverse-engineered BLE packet structures, opcode definitions (`protocol.ts`), and command mask mappings (`StatusWriteMask`, `HeaterMode`) were essential in understanding the Venty communication protocol and building this stand-alone ESP32 implementation.
+
+### Configuration
+
+You can easily adjust options at the top of `esp32-venty-keepalive.ino`:
+
+```cpp
+// Set to true to automatically disable haptic vibration on attach (avoids buzz on bounce)
+// Set to false to keep device vibration untouched
+const bool DISABLE_VIBRATION = true;
+
+// Threshold in seconds (1-119). Watchdog resets timer when it falls below this.
+const uint16_t KEEP_ALIVE_THRESHOLD_SECONDS = 30;
+```
+
+---
 
 ## Hardware & Flashing
 

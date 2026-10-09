@@ -6,6 +6,16 @@
 #include <BLEClient.h>
 #include <BLE2902.h>
 
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+// Set to true to automatically disable haptic vibration on attach (avoids buzz on bounce)
+// Set to false to keep device vibration untouched
+const bool DISABLE_VIBRATION = true;
+
+// Threshold in seconds (1-119). Watchdog resets timer when it falls below this.
+const uint16_t KEEP_ALIVE_THRESHOLD_SECONDS = 30;
+
 static BLEUUID serviceUUID("00000000-5354-4f52-5a26-4249434b454c");
 static BLEUUID commCharUUID("00000001-5354-4f52-5a26-4249434b454c");
 
@@ -82,6 +92,18 @@ void sendHeaterMode(uint8_t mode) {
   pCommChar->writeValue(frame, 20, false);
 }
 
+void disableVibration() {
+  if (pCommChar == nullptr || !pCommChar->canWrite()) return;
+
+  uint8_t frame[7] = {0};
+  frame[0] = 0x06; // Command.BRIGHTNESS_VIBRATION
+  frame[1] = 0x08; // BrightnessVibrationWriteMask.VIBRATION (1 << 3)
+  frame[5] = 0x00; // 0 = disabled
+
+  pCommChar->writeValue(frame, 7, false);
+  Serial.println("[CONFIG] Haptic vibration disabled on Venty.");
+}
+
 void executeAdaptiveReset() {
   sequenceInProgress = true;
   uint8_t activeMode = currentHeaterMode;
@@ -140,8 +162,8 @@ static void notifyCallback(
       baseTargetTemp = currentTargetTemp;
     }
 
-    // Trigger keep-alive sequence if timer drops to or below 100 seconds
-    if (currentTimer <= 100 && currentHeaterMode > 0 && !sequenceInProgress) {
+    // Trigger keep-alive sequence if timer drops to or below threshold
+    if (currentTimer <= KEEP_ALIVE_THRESHOLD_SECONDS && currentHeaterMode > 0 && !sequenceInProgress) {
       if (millis() - lastKeepAliveTime > 15000) {
         lastKeepAliveTime = millis();
         triggerKeepAlive = true;
@@ -197,6 +219,11 @@ bool connectToServer() {
       uint8_t val[] = {0x01, 0x00};
       p2902Desc->writeValue(val, 2, true);
     }
+  }
+
+  delay(200);
+  if (DISABLE_VIBRATION) {
+    disableVibration();
   }
 
   Serial.println("[STATUS] Venty successfully attached. Watchdog running.");
