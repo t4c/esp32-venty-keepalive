@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Default keep-alive trigger threshold adjusted from `<= 100s` to `<= 30s` (providing ~90 seconds of continuous uninterrupted session time between watchdog cycles).
 
-## [1.0.0] - 2026-10-09
+## [1.0.0] - 2026-10-04
 
 ### Added
 - Initial standalone autonomous daemon implementation for ESP32.
