@@ -124,3 +124,11 @@ Once booted, the ESP32 automatically scans for advertising packets starting with
 - Operating the heating element continuously by suppressing the built-in auto-shutoff mechanism may cause additional thermal stress on battery cells and electronics.
 - Using third-party software to bypass manufacturer safety or convenience timers may void your device warranty.
 - The author and contributors assume no responsibility for damaged vaporizers, bricked units, shortened component lifespans, or unexpected side effects.
+
+---
+
+## Support
+
+If you find this project useful, you can buy me a coffee:
+
+[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=t4c2&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/t4c2)
